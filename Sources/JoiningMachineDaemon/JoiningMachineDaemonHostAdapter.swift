@@ -1,5 +1,5 @@
 import Foundation
-import JoiningMachineTransportBoundary
+import MIDI2Transports
 
 /// Store/host boundary for the joining-machine daemon. The provider is the
 /// authority for the already-signed readiness property; this adapter owns only

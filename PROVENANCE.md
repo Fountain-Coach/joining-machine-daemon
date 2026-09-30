@@ -18,5 +18,6 @@ The current dependency pin is:
 
 The package deliberately has no binary download path. The supported default
 is source fetch, detached exact revision, dependency resolution, local review,
-and local build. Any consuming EstatePublisher release must preserve this
-provenance tuple in its native release receipt.
+and local build of `joining-machine-daemon`. Any consuming EstatePublisher
+release must preserve this provenance tuple in its native release receipt and
+must verify that the resulting file begins with the Linux ELF magic bytes.

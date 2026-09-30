@@ -1,6 +1,6 @@
 import Foundation
 import MIDI2CITransport
-import JoiningMachineTransportBoundary
+import MIDI2Transports
 
 /// Lifecycle states owned by the standalone joining-machine runtime. `ready` means the transport is open and the
 /// daemon has answered at least one MIDI-CI discovery request; it does not mean Chapter 141 admission.

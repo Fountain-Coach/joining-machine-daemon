@@ -1,6 +1,6 @@
 import Foundation
 import MIDI2CITransport
-import JoiningMachineTransportBoundary
+import MIDI2Transports
 
 /// A dedicated MIDI-CI Discovery initiator for asking one remote instrument
 /// to identify itself. It owns no responder state and writes no Store data.

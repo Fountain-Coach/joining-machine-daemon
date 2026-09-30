@@ -38,14 +38,16 @@ content to a shell or install a fetched binary.
 ## Build and test
 
 ```sh
-swift build -c release
+swift build --product joining-machine-daemon -c release
 swift test
 ```
 
-The public package produces a library. It does not manufacture a machine
-identity, read a Store, access a keychain, or install itself. A realm-specific
-host adapter must inject those capabilities and must preserve its own native
-authorization and read-back proof.
+The public package produces a library and a reference `joining-machine-daemon`
+Linux/macOS executable. The executable accepts only typed MUID, software
+revision, endpoint, and base64 readiness bytes; it does not manufacture a
+machine identity, read a Store, access a keychain, or install itself. A
+realm-specific host adapter must obtain and verify those inputs and must
+preserve its own native authorization and read-back proof.
 
 ## Sensitive-realm boundary
 
@@ -56,7 +58,8 @@ The public recipe never contains:
 - host-specific addresses, service units, or production configuration.
 
 The private EstatePublisher integration must consume an exact public revision,
-verify the clean checkout and dependency lock, build a Linux ELF artifact,
+verify the clean checkout and dependency lock, build the
+`joining-machine-daemon` product as a Linux ELF artifact,
 record source/artifact digests and provenance, and only then perform the
 existing native installation/admission operation. Public source transparency
 does not by itself prove target admission or production safety.

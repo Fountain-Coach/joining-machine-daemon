@@ -1,6 +1,6 @@
 import Foundation
 import MIDI2CITransport
-import JoiningMachineTransportBoundary
+import MIDI2Transports
 
 /// Native composition boundary for the Chapter 141 joining instrument.
 ///

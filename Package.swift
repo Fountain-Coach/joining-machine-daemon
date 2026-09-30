@@ -5,7 +5,8 @@ let package = Package(
     name: "JoiningMachineDaemonPublic",
     platforms: [.macOS(.v13)],
     products: [
-        .library(name: "JoiningMachineDaemon", targets: ["JoiningMachineDaemon"])
+        .library(name: "JoiningMachineDaemon", targets: ["JoiningMachineDaemon"]),
+        .executable(name: "joining-machine-daemon", targets: ["JoiningMachineDaemonExecutable"])
     ],
     dependencies: [
         .package(url: "https://github.com/Fountain-Coach/midi2.git",
@@ -21,14 +22,15 @@ let package = Package(
             path: "Sources/MIDI2CITransport"
         ),
         .target(
-            name: "JoiningMachineTransportBoundary",
-            path: "Sources/MIDI2Transports"
-        ),
-        .target(
             name: "JoiningMachineDaemon",
-            dependencies: ["MIDI2CITransport", "JoiningMachineTransportBoundary",
+            dependencies: ["MIDI2CITransport", .product(name: "MIDI2Transports", package: "midi2"),
                            .product(name: "MIDI2", package: "midi2")],
             path: "Sources/JoiningMachineDaemon"
+        ),
+        .executableTarget(
+            name: "JoiningMachineDaemonExecutable",
+            dependencies: ["JoiningMachineDaemon", .product(name: "MIDI2Transports", package: "midi2")],
+            path: "Sources/JoiningMachineDaemonExecutable"
         ),
         .testTarget(
             name: "JoiningMachineDaemonTests",
