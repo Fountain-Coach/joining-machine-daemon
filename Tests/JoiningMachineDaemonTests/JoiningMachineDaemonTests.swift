@@ -16,4 +16,18 @@ final class JoiningMachineDaemonTests: XCTestCase {
         XCTAssertThrowsError(try JoiningMachineInstrumentIdentity(muid: 0, softwareRevision: 1))
         XCTAssertThrowsError(try JoiningMachineInstrumentIdentity(muid: 1, softwareRevision: 0))
     }
+
+    func testReadinessFileProviderReadsOnlyAbsoluteRegularFiles() async throws {
+        let path = FileManager.default.temporaryDirectory
+            .appendingPathComponent("joining-machine-readiness-(UUID().uuidString)")
+        try Data("typed-readiness".utf8).write(to: path, options: .atomic)
+        defer { try? FileManager.default.removeItem(at: path) }
+
+        let provider = try JoiningMachineDaemonReadinessFileProvider(path: path.path)
+        let readiness = try await provider.readinessPropertyData()
+        XCTAssertEqual(readiness, Data("typed-readiness".utf8))
+        XCTAssertThrowsError(try JoiningMachineDaemonReadinessFileProvider(path: "relative/readiness")) { error in
+            XCTAssertEqual(error as? JoiningMachineDaemonReadinessFileError, .invalidPath)
+        }
+    }
 }

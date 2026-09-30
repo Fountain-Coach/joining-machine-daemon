@@ -6,12 +6,14 @@ private struct Arguments {
     let muid: UInt32
     let softwareRevision: UInt32
     let endpoint: String
-    let readiness: Data
+    let readinessBase64: Data?
+    let readinessFile: String?
     let listenPort: UInt16
     let selfTest: Bool
 
     init() throws {
         let values = Array(CommandLine.arguments.dropFirst())
+        let selfTest = values.contains("--self-test")
         func required(_ flag: String) throws -> String {
             guard let index = values.firstIndex(of: flag), index + 1 < values.count else {
                 throw NSError(domain: "JoiningMachineDaemon", code: 64,
@@ -23,8 +25,7 @@ private struct Arguments {
               let softwareRevision = UInt32(try required("--software-revision")), softwareRevision != 0,
               let listenPort = UInt16(values.firstIndex(of: "--listen-port").flatMap {
                   $0 + 1 < values.count ? values[$0 + 1] : nil
-              } ?? "5004"), listenPort != 0,
-              let readiness = Data(base64Encoded: try required("--readiness-base64")) else {
+              } ?? "5004"), listenPort != 0 else {
             throw NSError(domain: "JoiningMachineDaemon", code: 64,
                           userInfo: [NSLocalizedDescriptionKey: "invalid typed daemon input"])
         }
@@ -36,9 +37,22 @@ private struct Arguments {
         self.muid = muid
         self.softwareRevision = softwareRevision
         self.endpoint = endpoint
-        self.readiness = readiness
+        self.readinessBase64 = values.firstIndex(of: "--readiness-base64").flatMap {
+            $0 + 1 < values.count ? Data(base64Encoded: values[$0 + 1]) : nil
+        }
+        self.readinessFile = values.firstIndex(of: "--readiness-file").flatMap {
+            $0 + 1 < values.count ? values[$0 + 1] : nil
+        }
+        guard (self.readinessBase64 != nil) != (self.readinessFile != nil) else {
+            throw NSError(domain: "JoiningMachineDaemon", code: 64,
+                          userInfo: [NSLocalizedDescriptionKey: "provide exactly one readiness source"])
+        }
+        if !selfTest && self.readinessFile == nil {
+            throw NSError(domain: "JoiningMachineDaemon", code: 64,
+                          userInfo: [NSLocalizedDescriptionKey: "live daemon requires target-owned --readiness-file"])
+        }
         self.listenPort = listenPort
-        self.selfTest = values.contains("--self-test")
+        self.selfTest = selfTest
     }
 }
 
@@ -52,9 +66,19 @@ struct JoiningMachineDaemonExecutable {
     static func main() async {
         do {
             let arguments = try Arguments()
+            let readiness: Data
+            if let readinessBase64 = arguments.readinessBase64 {
+                readiness = readinessBase64
+            } else if let readinessFile = arguments.readinessFile {
+                readiness = try await JoiningMachineDaemonReadinessFileProvider(path: readinessFile)
+                    .readinessPropertyData()
+            } else {
+                throw NSError(domain: "JoiningMachineDaemon", code: 64,
+                              userInfo: [NSLocalizedDescriptionKey: "readiness source missing"])
+            }
             let configuration = try JoiningMachineDaemonInstrumentConfiguration(
                 muid: arguments.muid, softwareRevision: arguments.softwareRevision,
-                endpoint: arguments.endpoint, readinessPropertyData: arguments.readiness)
+                endpoint: arguments.endpoint, readinessPropertyData: readiness)
             if arguments.selfTest {
                 let report = try JoiningMachineDaemonSelfTest.run(configuration: configuration)
                 let encoder = JSONEncoder()
@@ -66,7 +90,7 @@ struct JoiningMachineDaemonExecutable {
                                            enableDiscovery: false, listenPort: arguments.listenPort)
             let adapter = JoiningMachineDaemonHostAdapter(
                 muid: arguments.muid, softwareRevision: arguments.softwareRevision,
-                endpoint: arguments.endpoint, provider: StaticReadinessProvider(value: arguments.readiness),
+                endpoint: arguments.endpoint, provider: StaticReadinessProvider(value: readiness),
                 transport: transport) { lifecycle in
                     print("joining-machine-lifecycle=\(lifecycle.state.rawValue) generation=\(lifecycle.generation) restart_count=\(lifecycle.restartCount)")
                 }

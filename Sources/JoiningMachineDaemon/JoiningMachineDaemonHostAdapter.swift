@@ -13,9 +13,9 @@ public enum JoiningMachineDaemonHostAdapterError: Error, Equatable, Sendable {
     case notStarted
 }
 
-/// Composes one Store-derived readiness property with the existing native
-/// MIDI2-CI responder and restart-safe runtime. It never reads a sidecar file,
-/// creates an identity, or installs an artifact.
+/// Composes one target-owned readiness property with the existing native
+/// MIDI2-CI responder and restart-safe runtime. It never creates an identity,
+/// writes Store state, or installs an artifact.
 public final class JoiningMachineDaemonHostAdapter: @unchecked Sendable {
     private let muid: UInt32
     private let softwareRevision: UInt32

@@ -43,11 +43,13 @@ swift test
 ```
 
 The public package produces a library and a reference `joining-machine-daemon`
-Linux/macOS executable. The executable accepts only typed MUID, software
-revision, endpoint, and base64 readiness bytes; it does not manufacture a
-machine identity, read a Store, access a keychain, or install itself. A
-realm-specific host adapter must obtain and verify those inputs and must
-preserve its own native authorization and read-back proof.
+Linux/macOS executable. Live mode accepts typed MUID, software revision,
+endpoint, and an absolute target-owned readiness-file path. The daemon does
+not manufacture a machine identity, read a Store, access a keychain, or
+install itself. Base64 readiness input is retained only for explicit
+`--self-test` codec checks and is rejected for live mode. A realm-specific
+host adapter must create or reuse identity, write and read back the Store
+readiness projection, and preserve its own native authorization proof.
 
 ## Sensitive-realm boundary
 
