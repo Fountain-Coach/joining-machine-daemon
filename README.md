@@ -1,5 +1,7 @@
 # Joining Machine Daemon — public recipe
 
+> **FCIS architecture:** The [FCIS standalone Go stack specification](https://github.com/Fountain-Coach/.github/blob/main/FCIS-STACK.md) defines the owner-operated FCIS issuer and authenticated Host/instrument boundary. This portable MIDI-CI daemon remains a separate public recipe, not an FCIS credential store, central issuer or live-enrollment proof.
+
 This repository contains the portable, open-source MIDI-CI responder and
 restart-safe daemon core used by a Fountain Coach joining machine.
 
